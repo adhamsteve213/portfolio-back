@@ -19,7 +19,7 @@ class WorkSample extends Model
         'sort_order',
     ];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url', 'is_cover'];
 
     public function folder(): BelongsTo
     {
@@ -29,5 +29,12 @@ class WorkSample extends Model
     public function getImageUrlAttribute(): string
     {
         return url(Storage::url($this->image_path));
+    }
+
+    public function getIsCoverAttribute(): bool
+    {
+        $filename = strtolower(pathinfo($this->image_path, PATHINFO_FILENAME));
+
+        return str_starts_with($filename, 'cover');
     }
 }

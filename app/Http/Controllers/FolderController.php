@@ -11,6 +11,7 @@ class FolderController extends Controller
     public function index(): JsonResponse
     {
         $folders = Folder::query()
+            ->with('workSamples')
             ->withCount('workSamples')
             ->orderBy('sort_order')
             ->orderByDesc('id')

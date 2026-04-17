@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class WorkSample extends Model
 {
@@ -28,7 +27,7 @@ class WorkSample extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return url(Storage::url($this->image_path));
+        return asset('storage/'.ltrim($this->image_path, '/'));
     }
 
     public function getIsCoverAttribute(): bool

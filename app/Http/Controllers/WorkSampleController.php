@@ -91,16 +91,72 @@ class WorkSampleController extends Controller
             $safeName = 'image';
         }
 
-        $relativePath = 'work-samples/'.$safeName.'.'.$extension;
-        $counter = 1;
+        $contents = @file_get_contents($file->getRealPath());
 
-        while (Storage::disk('public')->exists($relativePath)) {
-            $relativePath = 'work-samples/'.$safeName.'_'.$counter.'.'.$extension;
-            $counter++;
+        if ($contents !== false) {
+            $decoded = @imagecreatefromstring($contents);
+
+            if ($decoded !== false) {
+                $jpegPath = $this->getUniquePath("work-samples/{$safeName}", 'jpg');
+                $jpegBinary = $this->encodeJpeg($decoded);
+
+                if ($jpegBinary !== null) {
+                    Storage::disk('public')->put($jpegPath, $jpegBinary);
+
+                    return $jpegPath;
+                }
+            }
         }
+
+        $relativePath = $this->getUniquePath("work-samples/{$safeName}", $extension);
 
         Storage::disk('public')->putFileAs('work-samples', $file, basename($relativePath));
 
         return $relativePath;
+    }
+
+    private function getUniquePath(string $basePath, string $extension): string
+    {
+        $relativePath = "{$basePath}.{$extension}";
+        $counter = 1;
+
+        while (Storage::disk('public')->exists($relativePath)) {
+            $relativePath = "{$basePath}_{$counter}.{$extension}";
+            $counter++;
+        }
+
+        return $relativePath;
+    }
+
+    private function encodeJpeg(\GdImage $source): ?string
+    {
+        $width = imagesx($source);
+        $height = imagesy($source);
+
+        $canvas = imagecreatetruecolor($width, $height);
+
+        if ($canvas === false) {
+            imagedestroy($source);
+
+            return null;
+        }
+
+        $white = imagecolorallocate($canvas, 255, 255, 255);
+        imagefilledrectangle($canvas, 0, 0, $width, $height, $white);
+        imagecopy($canvas, $source, 0, 0, 0, 0, $width, $height);
+
+        imagedestroy($source);
+
+        ob_start();
+        $success = imagejpeg($canvas, null, 90);
+        $binary = ob_get_clean();
+
+        imagedestroy($canvas);
+
+        if (! $success || $binary === false) {
+            return null;
+        }
+
+        return $binary;
     }
 }

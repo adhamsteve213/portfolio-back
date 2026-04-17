@@ -39,6 +39,6 @@ class Folder extends Model
             return null;
         }
 
-        return asset('storage/'.ltrim($thumbnailPath, '/'));
+        return url('/api/media/'.ltrim($thumbnailPath, '/'));
     }
 }

@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\FolderController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PublicPortfolioController;
 use App\Http\Controllers\WorkSampleController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/media/{path}', [MediaController::class, 'show'])->where('path', '.*');
 
 Route::get('/portfolio/folders', [PublicPortfolioController::class, 'index']);
 Route::get('/portfolio/folders/{folder}', [PublicPortfolioController::class, 'show']);

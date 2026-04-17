@@ -27,7 +27,7 @@ class WorkSample extends Model
 
     public function getImageUrlAttribute(): string
     {
-        return asset('storage/'.ltrim($this->image_path, '/'));
+        return url('/api/media/'.ltrim($this->image_path, '/'));
     }
 
     public function getIsCoverAttribute(): bool

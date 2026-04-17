@@ -18,9 +18,9 @@ class WorkSampleController extends Controller
             'project_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
-            'image' => ['required_without:images', 'image', 'mimes:jpg,jpeg,png', 'max:8192'],
+            'image' => ['required_without:images', 'file', 'mimetypes:image/*'],
             'images' => ['required_without:image', 'array'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png', 'max:8192'],
+            'images.*' => ['file', 'mimetypes:image/*'],
         ]);
 
         $uploadedImages = [];
@@ -60,7 +60,7 @@ class WorkSampleController extends Controller
             'project_name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
-            'image' => ['sometimes', 'image', 'mimes:jpg,jpeg,png', 'max:8192'],
+            'image' => ['sometimes', 'file', 'mimetypes:image/*'],
         ]);
 
         if ($request->hasFile('image')) {
@@ -84,7 +84,7 @@ class WorkSampleController extends Controller
     private function storeWithOriginalFileName(UploadedFile $file): string
     {
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $extension = strtolower($file->getClientOriginalExtension());
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $safeName = Str::of($originalName)->trim()->slug('_')->value();
 
         if ($safeName === '') {

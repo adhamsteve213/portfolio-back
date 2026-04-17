@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class WorkSample extends Model
 {
@@ -25,8 +26,12 @@ class WorkSample extends Model
         return $this->belongsTo(Folder::class);
     }
 
-    public function getImageUrlAttribute(): string
+    public function getImageUrlAttribute(): ?string
     {
+        if (! Storage::disk('public')->exists($this->image_path)) {
+            return null;
+        }
+
         return url('/api/media/'.ltrim($this->image_path, '/'));
     }
 

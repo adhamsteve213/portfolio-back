@@ -16,6 +16,8 @@ class WorkSample extends Model
         'project_name',
         'description',
         'image_path',
+        'image_data',
+        'image_mime',
         'sort_order',
     ];
 
@@ -28,11 +30,16 @@ class WorkSample extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        if (! Storage::disk('public')->exists($this->image_path)) {
+        if (! $this->hasRenderableImage()) {
             return null;
         }
 
         return url('/api/media/'.ltrim($this->image_path, '/'));
+    }
+
+    public function hasRenderableImage(): bool
+    {
+        return Storage::disk('public')->exists($this->image_path) || ! empty($this->image_data);
     }
 
     public function getIsCoverAttribute(): bool

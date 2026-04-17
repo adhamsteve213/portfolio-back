@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class Folder extends Model
 {
@@ -29,7 +28,7 @@ class Folder extends Model
         $samples = $this->relationLoaded('workSamples') ? $this->workSamples : $this->workSamples()->get();
 
         $coverSample = $samples->first(function (WorkSample $sample): bool {
-            if (! Storage::disk('public')->exists($sample->image_path)) {
+            if (! $sample->hasRenderableImage()) {
                 return false;
             }
 
@@ -39,7 +38,7 @@ class Folder extends Model
         });
 
         $firstExistingSample = $samples->first(function (WorkSample $sample): bool {
-            return Storage::disk('public')->exists($sample->image_path);
+            return $sample->hasRenderableImage();
         });
 
         $thumbnailPath = $coverSample?->image_path ?? $firstExistingSample?->image_path;

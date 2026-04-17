@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\WorkSample;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -19,7 +20,22 @@ class MediaController extends Controller
         $disk = Storage::disk('public');
 
         if (! $disk->exists($normalizedPath)) {
-            abort(404);
+            $sample = WorkSample::query()->where('image_path', $normalizedPath)->first();
+
+            if (! $sample || empty($sample->image_data)) {
+                abort(404);
+            }
+
+            $binary = base64_decode($sample->image_data, true);
+
+            if ($binary === false) {
+                abort(404);
+            }
+
+            return response($binary, 200, [
+                'Content-Type' => $sample->image_mime ?: 'application/octet-stream',
+                'Cache-Control' => 'public, max-age=31536000, immutable',
+            ]);
         }
 
         $absolutePath = $disk->path($normalizedPath);

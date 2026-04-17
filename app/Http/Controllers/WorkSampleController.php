@@ -37,13 +37,15 @@ class WorkSampleController extends Controller
         $sortOrder = $validated['sort_order'] ?? 0;
 
         foreach ($uploadedImages as $index => $uploadedImage) {
-            $path = $this->storeWithOriginalFileName($uploadedImage);
+            $storedImage = $this->storeWithOriginalFileName($uploadedImage);
 
             $samples[] = $folder->workSamples()->create([
                 'project_name' => $validated['project_name'],
                 'description' => $validated['description'] ?? null,
                 'sort_order' => $sortOrder + $index,
-                'image_path' => $path,
+                'image_path' => $storedImage['path'],
+                'image_data' => $storedImage['data'],
+                'image_mime' => $storedImage['mime'],
             ]);
         }
 
@@ -65,7 +67,10 @@ class WorkSampleController extends Controller
 
         if ($request->hasFile('image')) {
             Storage::disk('public')->delete($workSample->image_path);
-            $validated['image_path'] = $this->storeWithOriginalFileName($request->file('image'));
+            $storedImage = $this->storeWithOriginalFileName($request->file('image'));
+            $validated['image_path'] = $storedImage['path'];
+            $validated['image_data'] = $storedImage['data'];
+            $validated['image_mime'] = $storedImage['mime'];
         }
 
         $workSample->update($validated);
@@ -81,7 +86,7 @@ class WorkSampleController extends Controller
         return response()->json(['message' => 'Work sample deleted.']);
     }
 
-    private function storeWithOriginalFileName(UploadedFile $file): string
+    private function storeWithOriginalFileName(UploadedFile $file): array
     {
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
@@ -103,7 +108,11 @@ class WorkSampleController extends Controller
                 if ($jpegBinary !== null) {
                     Storage::disk('public')->put($jpegPath, $jpegBinary);
 
-                    return $jpegPath;
+                    return [
+                        'path' => $jpegPath,
+                        'data' => base64_encode($jpegBinary),
+                        'mime' => 'image/jpeg',
+                    ];
                 }
             }
         }
@@ -112,7 +121,14 @@ class WorkSampleController extends Controller
 
         Storage::disk('public')->putFileAs('work-samples', $file, basename($relativePath));
 
-        return $relativePath;
+        $raw = @file_get_contents($file->getRealPath());
+        $mime = $file->getMimeType() ?: 'application/octet-stream';
+
+        return [
+            'path' => $relativePath,
+            'data' => $raw !== false ? base64_encode($raw) : null,
+            'mime' => $mime,
+        ];
     }
 
     private function getUniquePath(string $basePath, string $extension): string

@@ -72,7 +72,7 @@ Update `.env` with a working MySQL connection and these values:
 
 ```env
 APP_URL=http://localhost:8000
-FRONTEND_URL=http://localhost:3000,https://my-portfolio-bipno7dke-adhamsteve213s-projects.vercel.app
+FRONTEND_URL=http://localhost:3000,https://adhamsteve-ivory.vercel.app
 
 ADMIN_NAME="Portfolio Admin"
 ADMIN_EMAIL=admin@portfolio.test

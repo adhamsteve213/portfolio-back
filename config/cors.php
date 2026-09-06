@@ -7,7 +7,10 @@ return [
 
     'allowed_origins' => array_values(array_filter(array_map(
         'trim',
-        explode(',', env('FRONTEND_URL', 'http://localhost:3000'))
+        explode(',', env(
+            'FRONTEND_URL',
+            'http://localhost:3000,https://adhamsteve-ivory.vercel.app'
+        ))
     ))),
 
     'allowed_origins_patterns' => [],
